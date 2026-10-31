@@ -1,3 +1,6 @@
 __pycache__
 flagged
 misc
+
+# Local kubeconfig for this cluster (contains admin client cert/key) — never commit
+k8s/config
