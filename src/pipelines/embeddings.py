@@ -43,7 +43,7 @@ from src.util.clip_config import (
 from PIL import Image
 import time
 
-from serve import get_flask_tunnel_url
+from serve import get_aux_base_url
 
 # Initialize the semantic axes from the word lists
 age = get_axis_embeddings(young, old)
@@ -320,8 +320,7 @@ def init_user_session(request: gr.Request):
     # Generate HTML for the visualization and get the URL
     html_path = generate_user_html(session_hash)
     timestamp = int(time.time())
-    flask_tunnel = get_flask_tunnel_url()
-    flask_url = f"{flask_tunnel}/plot/{session_hash}?t={timestamp}"
+    flask_url = f"{get_aux_base_url()}/plot/{session_hash}?t={timestamp}"
 
     return flask_url, session_hash, is_new
 
@@ -361,8 +360,7 @@ def update_user_fig(session_hash):
     html_path = generate_user_html(session_hash)
 
     timestamp = int(time.time())
-    flask_tunnel = get_flask_tunnel_url()
-    return f"{flask_tunnel}/plot/{session_hash}?t={timestamp}"
+    return f"{get_aux_base_url()}/plot/{session_hash}?t={timestamp}"
 
 def add_word_user(new_example, session_hash):
     """

@@ -42,23 +42,22 @@ graph LR
 
 ### Flask Server Integration
 
-The application uses a separate Flask server (`serve.py`) specifically for serving content that Gradio can't handle natively, such as the interactive 3D plot in the Embeddings tab:
+The application uses a separate Flask app to serve content that Gradio can't handle natively, such as the interactive 3D plot in the Embeddings tab:
 
 1. **Initialization**: When the application starts:
-   - The main Gradio server starts on port 7860
-   - A separate Flask server starts on port 8050
-   - Both servers share access to session data and filesystem
+   - The main Gradio server starts on port 7860 and serves the whole application
+   - The Flask app is mounted on that same server under `/aux`, so it shares the demo's origin (no separate port, URL, or tunnel)
 
 2. **Serving Dynamic Content**:
-   - The Flask server provides endpoints for interactive visualizations and dynamic images
-   - The content is embedded in the Gradio UI using iframes
+   - The Flask app provides endpoints for interactive visualizations and dynamic images (`/aux/plot/<session_hash>`)
+   - The content is embedded in the Gradio UI using same-origin iframes with relative URLs, so it survives pod restarts, failovers, and domain changes
 
 ```mermaid
 graph TD
     A[run.py] --> B[Start Gradio Server :7860]
-    A --> C[Start Flask Server :8050]
+    A --> C[Mount Flask app at /aux on the same server]
     D[User Browser] --> B
-    B -->|iframe src=Flask URL| D
+    B -->|iframe src=/aux/... relative| D
     D -->|Request Visualization| C
     C -->|Serve HTML/JavaScript| D
 ```

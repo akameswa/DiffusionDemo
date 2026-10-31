@@ -17,12 +17,11 @@ components and visualizations for educational purposes.
 
 import numpy as np
 import gradio as gr
-import os, io, time
+import os, io
 from PIL import Image
 from src.util import *
 from src.pipelines import *
-from threading import Thread
-from serve import run_flask_server
+from serve import mount_aux_server
 from src.util.session import session_manager
 from src.pipelines.embeddings import user_data, update_gallery_zip
 
@@ -1694,19 +1693,20 @@ if __name__ == "__main__":
     # Start the session cleanup thread to remove old sessions
     session_manager.start_cleanup_thread()
 
-    # Start the Flask server in a separate thread for 3D visualizations
-    flask_thread = Thread(target=run_flask_server)
-    flask_thread.daemon = True  # Thread will exit when main program exits
-    flask_thread.start()
-    
-    # Wait for the Flask server to initialize
-    time.sleep(2)
-    
     try:
         # Create outputs directory if it doesn't exist
         os.makedirs("outputs", exist_ok=True)
-        # Launch the Gradio interface with queue enabled and sharing activated
-        demo.queue().launch(share=True)
+
+        # Launch the Gradio interface with queue enabled and sharing activated.
+        # prevent_thread_lock lets us mount the auxiliary app on demo.app before
+        # blocking: launch() rebuilds demo.app, so the mount has to come after it.
+        demo.queue().launch(share=True, prevent_thread_lock=True)
+
+        # Serve the embedding plot/images from this same server (same origin),
+        # instead of a separate gradio.live tunnel that goes stale on restarts.
+        mount_aux_server(demo)
+
+        demo.block_thread()
     except KeyboardInterrupt:
         # Handle clean shutdown when user presses Ctrl+C
         print("Server closed")
