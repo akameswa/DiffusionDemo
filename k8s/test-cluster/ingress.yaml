@@ -1,0 +1,30 @@
+# Hostname is filled in at apply time from the ingress load balancer's public
+# VIP, using sslip.io so no DNS record is needed:
+#   TEST_HOST=<vip>.sslip.io
+# Apply with:
+#   sed "s|TEST_HOST|$TEST_HOST|g" ingress.yaml | kubectl apply -f -
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: diffusion-demo-test-ingress
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: "TEST_HOST"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: diffusion-demo-test-service
+            port:
+              number: 80
+  tls:
+  - hosts:
+    - "TEST_HOST"
+    secretName: diffusion-demo-test-tls

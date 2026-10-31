@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: diffusion-demo-test-service
+spec:
+  type: ClusterIP
+  selector:
+    app: diffusion-demo-test
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 7860

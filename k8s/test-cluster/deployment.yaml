@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: diffusion-demo-test-deployment
+  labels:
+    app: diffusion-demo-test
+spec:
+  replicas: 1
+  minReadySeconds: 120
+  selector:
+    matchLabels:
+      app: diffusion-demo-test
+  template:
+    metadata:
+      labels:
+        app: diffusion-demo-test
+    spec:
+      containers:
+      - name: diffusion-demo-test
+        image: akameswa/diffusion-demo-cuda-slim:embedding-same-origin
+        ports:
+        - containerPort: 7860
+        resources:
+          requests:
+            nvidia.com/gpu: 1
+          limits:
+            nvidia.com/gpu: 1
